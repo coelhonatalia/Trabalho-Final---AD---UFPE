@@ -1,0 +1,461 @@
+---
+title: 'Voto Retrospectivo no Brasil: os eleitores punem políticos corruptos?'
+author: "Natália Coêlho de Souza Oliveira"
+date: "5 de setembro de 2019"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+geometry: margin=1in
+mainfont: Times New Roman
+fontfamily: mathpazo
+fontsize: 12 pt
+indent: true
+link-citations: yes
+endnote: no
+header-includes:
+  - \usepackage{indentfirst}
+  - \setlength\parindent{1.2cm}
+  - \usepackage{graphicx}
+  - \usepackage{setspace}\onehalfspacing
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r tinytex, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+## RESUMO
+
+O objetivo deste trabalho é avaliar o efeito da implicação em corrupção de um candidato incumbente a deputado federal nas eleições brasileiras de 2018 e da identificação partidária regional no desempenho eleitoral do candidato. A principal hipótese é que um candidato implicado como corrupto pela operação Lava Jato pertencente a um partido com maior grau de identificação partidária na macrorregião a que ele pertence será menos punido do que os candidatos implicados de um partido menos partidário. A partir disso, é utilizado como variável dependente crescimento de votos, e como variáveis independentes temos implicado, partidarismo na macrorregião, total de recursos recebidos pelos incumbentes e PIB per capta por estado, sendo as duas últimas variáveis de controle. Para estimar o efeito será utilizada uma regressão linear múltipla com termo interativo entre implicado e partidarismo. Os resultados mostram que a direção do termo de interação não segue de acordo com a nossa hipótese, entretanto a hipótese nula não pode ser descartada, uma vez que não há significância estatística para os resultados do termo de interação.
+
+### Palavras-chave
+voto retrospectivo, corrupção, partidarismo.
+
+```{r open_packages, echo = FALSE, message = FALSE, warning = FALSE}
+
+# Open Packages
+
+if(require(tidyverse) == F) install.packages('tidyverse'); require (tidyverse)
+if(require(readxl) == F) install.packages('readxl'); require (readxl)
+if(require(readr) == F) install.packages('readr'); require (readr)
+if(require(ggplot2) == F) install.packages('ggplot2'); require (ggplot2)
+if(require(stargazer) == F) install.packages('stargazer'); require (stargazer)
+if(require(car) == F) install.packages('car'); require (car)
+if(require(magrittr) == F) install.packages('magrittr'); require(magrittr)
+if(require(rio) == F) install.packages('rio'); require(rio)
+if(require(fields) == F) install.packages('fields'); require(fields)
+if(require(MASS) == F) install.packages('MASS'); require(MASS)
+if(require(psych) == F) install.packages('psych'); require(psych)
+if(require(sandwich) == F) install.packages('sandwich'); require(sandwich)
+if(require(lmtest) == F) install.packages('lmtest'); require(lmtest)
+```
+
+```{r open_databases, echo = FALSE, message = FALSE, warning = FALSE} 
+# Definindo o diretório 
+setwd("C:/Users/NATHALIA/Documents/CP-Mestrado/Análise de Dados - Davi Moreira/Trabalho Final")
+
+# Abrindo base de dados
+ncoelho <- read_xlsx("natalia-coelho-ad-ufpe-2019.xlsx")
+```
+
+
+
+
+
+
+
+
+
+
+# INTRODUÇÃO
+
+Um deputado federal eleito que busca reeleição estar implicado em um escândalo de corrupção possui menores chances de aumentar sua quantidade de votos caso pertença a um partido com menor partidarismo regional do que se pertencesse a um partido mais partidário? Este artigo busca encontrar a resposta para esta pergunta a partir do estudo de caso das eleições realizadas no Brasil em 2018. Em 2014 esse país ficou marcado pelo início do que seria a maior operação de investigação contra corrupção do mundo, a Lava Jato. Esta operação ganhou grande espaço na mídia, fazendo de conhecimento geral o envolvimento em corrupção de uma série de políticos. Portanto, o objetivo deste trabalho é analisar as consequências para a prestação de contas eleitoral do envolvimento de um político na Lava Jato.
+
+A literatura empírica da ciência política que investiga o voto retrospectivo e a accountability eleitoral é focada, principalmente, nas consequências da economia de um país em suas eleições. Existe uma gama de estudos e experimentos testando a relação causal entre o crescimento econômico e a reeleição do executivo, entretanto, as consequências de outas questões de valência, como a corrupção, e suas implicações eleitorais são estudadas com menor frequência. Este artigo pretende contribuir para o crescimento da literatura de voto retrospectivo que não gira em torno das consequências econômicas. 
+
+Este trabalho, portanto, se baseia nos estudos de Eggers (2014) sobre as consequências eleitorais do escândalo de despesas ocorrido em 2010 no Reino Unido. Os achados deste autor mostram que os candidatos implicados neste escândalo de corrupção possuíam menores chances de serem reeleitos do que os não implicados, ao mesmo tempo que os incumbentes implicados que eram de um partido mais partidário eram menos punidos na quantidade de votos do que aqueles de um partido menos partidário. Dessa forma, este artigo se inspira nessa pesquisa, mas realizando algumas adaptações para o modelo se enquadrar nas configurações de um sistema proporcional, e então realizar o teste de relação entre as variáveis de implicação em corrupção e partidarismo de forma interativa no crescimento de votos de um candidato incumbente pleiteando reeleição. A hipótese é que um candidato a deputado federal implicado como corrupto pela operação Lava Jato pertencente a um partido com maior grau de identificação partidária na macrorregião em que ele está inserido será menos punido eleitoralmente do que os candidatos implicados de um partido menos partidário. A escolha do caso brasileiro se deu pelo fato da magnitude da operação Lava Jato e seu título de maior operação contra corrupção do mundo, fazendo-se de extrema importância analisar quais as consequências dessa operação par as eleições e o que ela diz sobre o comportamento eleitoral e a teoria do voto retrospectivo. 
+
+Este artigo é estruturado da seguinte forma: na primeira seção é feita uma revisão de literatura sobre o voto retrospectivo e o comportamento eleitoral em consequências de escândalo de corrupção. Na segunda seção é construída a teoria do problema de pesquisa e definida a hipótese a ser testada. A terceira seção apresenta a metodologia, o desenho das pesquisa e o resumo das variáveis utilizadas no modelo. A quarta seção apresenta os resultados do modelo da nossa regressão linear interativa. E por fim, a última seção apresenta as conclusões desta pesquisa.
+
+
+
+# REVISÃO DE LITERATURA
+
+Para compreender como funciona o voto retrospectivo, é essencial que seja feita previamente uma compreensão do comportamento político do eleitor. De acordo com Downs (1957), eleitores maximizam sua utilidade ao votar no partido mais próximo de seu espectro ideológico, enquanto que os partidos maximizam sua utilidade ao escolherem uma plataforma que os garanta mais votos. A Teoria do Eleitor Mediano implica que, em um caso simples de uma competição bipartidária, os partidos vão adotar plataformas correspondentes à mediana da distribuição de pontos ideias dos eleitores, assegurando suas preferências e satisfação, portanto, “os eleitores desfrutam de um governo responsivo, independentemente de qual partido vence qualquer eleição” (Archen & Bartels, 2016, 25). Já o modelo canônico espacial implica que a percepção dos eleitores das plataformas políticas é incerta, considera o comportamento eleitoral movido por questões de valência e o comportamento político motivado por policy e ganho de cargos. 
+
+Berelson, Lazarsfeld, e McPhee (1954) realizaram o primeiro trabalho científico de análise de comportamento do eleitor nos Estados Unidos e concluíram que os eleitores não são motivados, não possuem conhecimento ou sequer agem racionalmente, como proposto pelas teorias normativas tradicionais. Eles mostram que os eleitores interpretam mal os posicionamentos dos candidatos e exageraram a extensão do apoio público para seus candidatos favoritos, os voto “caracterizavam-se mais pela fé do que pela convicção e pela expectativa positiva do que pela previsão cuidadosa das consequências” (p. 311). Campbell et al (1960), ao estudarem o eleitor americano, concluíram que 
+os resultados eleitorais foram decorrentes de lealdades partidárias de longa data por eleitores “pouco sofisticados” e com pouca compreensão de problemas ou ideologia. Converse (1964) ao aferir as respostas de mesmos eleitores às mesmas perguntas sobre problemas em períodos diferentes, a correlação entre as respostas variou de 0.5 a 0.3, evidenciando-se uma inconsistência, ao mesmo tempo em que a identificação partidária desses indivíduos eram muito mais estáveis, com correlações de aproximadamente 0.7. Archen e Bartels (2016) afirmam que pesquisas em outros países apresentam resultados semelhantes de cidadãos democráticos, corrobando esta ideia.
+
+Dessa forma, eleitores podem ser mal informados e incapazes de escolher aquele candidato que realmente representa suas preferências, os impedindo de agirem como eleitores racionais propriamente ditos. Bartels (1996) estimou o quanto os resultados gerais de seis eleições presidenciais coincidiam com o que eles teriam se todos os eleitores tivessem sido “totalmente informados” e encontrou que os votos reais destoam em três pontos percentuais dos votos fictícios, o que pode ser um valor muito alto para eleições com competições acirradas. 
+
+A teoria do voto retrospectivo apresenta então a ideia de que os eleitores não seriam tão desinformados e desempenham certo papel significativo na democracia. O voto retrospectivo é aquele que permite os eleitores exerçam controle sobre seus líderes político incumbentes ao recompensar o seu sucesso (reeleição) ou punir o seu fracasso (não reeleição). De acordo com Fiorina (1981), um eleitor não precisa entender de assuntos político profundamente para avaliar um governo como bom ou ruim, eles podem apenas avaliar de acordo com o seu próprio bem-estar. O voto retrospectivo, portanto, seria a forma de os eleitores escolherem a melhor política para maximizar seu bem-estar, dependendo este das diferenças em motivação, ideologia e competência dos candidatos disponíveis. “Se a competência intrínseca do titular não varia ao longo do tempo, ou varia puramente ao acaso sem correlação entre períodos de tempo, a melhor estimativa disponível de sua competência é simplesmente o bem-estar médio experimentado por sua liderança nos períodos atual e anterior.” (Archen e Bartels, 2016, 99).
+
+Entretanto, existe um problema fundamental nessa teoria, de acordo com Archen e Bartels (2016), eleitores podem ter uma grande dificuldade de identificar seu próprio bem-estar, nem sempre é obvio que houve um aumento na insegurança, ou melhora na saúde pública, por exemplo. Além disso, é relativo para cada eleitoro quanto o partido incumbente contribuiu para o seu próprio bem ou para o bem-estar da nação, uma vez que os eleitores têm suas próprias ideias sobre boas políticas. Portanto, se os cidadãos não conseguem identificar propriamente seu bem-estar, mesmo procurando agir de forma racional, podem fracassar ao votar de forma retrospectiva, reelegendo ou punindo um candidato por percepções errôneas de suas vivências. 
+
+A literatura da ciência política faz uma grande aposta no peso do desempenho econômico do candidato incumbente para sua reeleição, mesmo que existam erros de atribuição por parte dos eleitores (Lenz, 2012; Wolfers, 2002; Bartels, 2014). Entretanto, quando é levado em consideração as consequência do crescimento econômico de fato ao longo prazo nas eleições, de acordo com evidências de Achen e Bartels (2004), não existe alteração na perspectiva de voto do candidato/partido incumbente. Downs (1957), afirma que no mundo real existe incerteza e falta de informação impedindo os eleitores, inclusive os mais informados, de se comportarem de forma completamente racional. “Como ele não pode ter certeza de qual é a sua atual receita de utilidade do governo, ou o que seria se um partido da oposição estivesse no poder, ele só pode fazer estimativas de ambos (...) quando abrimos a porta do nosso modelo para a incerteza, também devemos admitir tais indesejáveis como erros, informações falsas e ignorância” (Downs, 1957, 45-46).
+
+Portanto, até mesmo quando nos referimos às percepções econômicas da sociedade, fatores esses que são observáveis de forma objetiva, elas podem fornecer uma base enganosa para avaliar o bem-estar dos eleitores e para premiar ou sancionar os incumbentes. Além disso, as percepções econômicas podem ser moldadas por preconceitos partidários, racionalização e aleatoriedade (Kramer, 1983; Conover, Feldman e Knight, 1987; Bartels, 2002a; Erikson, 2004). Assim, quando os eleitores possuem suas próprias convicções pessoais sobre o que é uma boa política e bom desempenho, ou tem suas convincções moldadas pelos partidos que possuem certo apreço, eles vão tender a votar em candidatos que compartilhem de suas ideias, como o previsto no modelo de votação espacial, ao invés de votar retrospectivamente. 
+
+Segundo Eggers (2014), uma das influências que levam os cidadãos a não votarem retrospectivamente é o apego partidário, ou partidarismo. Para mostrar esse argumento, o autor concentrou seus estudos no caso do escândalo de despesas parlamentares do Reino Unido em 2009, no qual foi revelado pela mídia que dezenas de deputados haviam usado indevidamente dinheiro público, e um ano após os escândalos esses candidatos enfrentaram as urnas para uma possível reeleição. Corrupção, assim como economia, é um problema de valência, ou seja, problemas que existe certo consenso entre a população independentemente das crenças políticas de cada um, espera-se que todos eleitores sejam contra a corrupção, assim como espera-se que todos eleitores sejam a favor do crescimento econômico. Pesquisas relaizadas no Reunino Unidos após o escândalo de 2009 mostraram que 90% dos estrevistados se consideravam “muito zangados” com o ocorrido, e cerca de 52% dos eleitores entrevistados disseram que votariam contra o candidato de seu partido preferido se ele estivesse implicado no escândalo. Entretanto, os resultados das eleições de 2010 não mostraram que esses candidatos foram plenamente punidos através dos votos. 
+
+Então, por que os eleitores que prefeririam ser governados por políticos não corruptos não conseguiriam remover os que são conhecidos por serem corruptos? Eggers (2014) afirma que mesmo quando os eleitores majoritariamente preferem os políticos não corruptos, eles discordam sobre outros aspectos da política, como qual partido deve estar no poder. Ele acredita que a capacidade do eleitor de impedir a corrupção, por vezes, é prejudicada pela determinação de alcançar outros objetivos políticos, como eleger um político de sua preferência partidária. Ou seja, a ideia é que o partidarismo torna os eleitores menos responsivos ao desempenho dos políticos. A partir desses dados, Eggers (2014) mostra empiricamente que as consequências eleitorais de um escândalo de corrupção são menores quando os eleitores têm preferências partidárias mais fortes e quando os eleitores punem um candidato, ou seja, votam retrospectivamente, é porque eles possuem uma fraca preferência partidária pelo incumbente.
+
+No Brasil,  de acordo com Pavão (2018), a corrupção foi identificada pelos eleitores como o pior problema político do país e como o pior defeito que um político poderia ter, não sendo indentificado por eles uma melhora para este problema ao longo dos anos (Pavão, 2018). Ainda segundo este estudo, três tipos de comportamento eleitoral foram observados: 1- eleitores confiaram na falta de opções alternativas para o problema da corrupção para justificar a votação para um candidato corrupto ou não usaram o problema como critério de votação; 2- eleitores usaram a mesma razão para justificar a falta de voto e; 3- eleitores rejeitaram visões negativas da corrupção, demonstrando tanto a convicção de que é possível votar em um candidato limpo como resolver o problema da corrupção através de eleições. Nara Pavão mostra também que na percepção dos eleitores brasileiros não há distinção entre políticos e partidos políticos quando se trata de sua capacidade de conter a corrupção. Além disso, esta autora encontra que ter mais informação política e estar perto de um partido político diminui as chances de acreditar que nenhum candidato alternativo ou partido político pode lidar com a corrupção.
+
+
+
+# TEORIA
+
+A pesquisa de Eggers (2014) mostram que na época da eleição de 2010, os três principais partidos britânicos eram o Partido Trabalhista, o Partido Liberal Democrata e o Partido Conservador, de forma que o Partido Liberal Democrata é considerado mais de centro e os outros dois partidos são concorrentes históricos e possuem eleitores mais partidários. Portanto, para medir o efeito do partidarismo na prestação de contas eleitoral, Eggers (2014) analisa se nos distritos eleitorais britânicos marcados por uma disputa entre o Labour Party e o Conservative Party a prestação de contas eleitoral é menor. Os resultados mostram que nos distritos eleitorais onde a disputa era entre o Conservative Party e o Labour Party, a punição para os incumbentes implicados era menor. 
+
+Dessa forma, canditados implicados no escândalo de corrupção possuem menores chances de serem reeleitos do que candidatos não implicados, entretanto, um candidato implicado no escândalo que concorre em um distrito em que os eleitores são mais partidários possui mais chances de serem reeleitos do que os canditos implicados que concorrem nos demais. Portanto, a pesquisa mostra que o partidarismo pode tornar os eleitores menos responsivos a escândalos de corrupção, e mesmo o foco do artigo tendo sido um único escândalo na política de um país, segundo Eggers (2014), suas implicações são mais amplas.
+
+A proposta deste artigo é, portanto, testar essa teoria de voto retrospectivo baseada nos estudos de Eggers (2014) em um país com sistema eleitoral diferente do sistema parlamentar bipartidário britânico, visto que isto ainda não foi feito. Considerando que a investigação Lava Jato no Brasil, país de sistema eleitoral proporcional, alcançou o posto de maior investigação contra corrupção do mundo, é importante identificar se esta operação gerou impacto nas eleições brasileiras de 2018 e no comportamento do eleitor na hora de punir ou premiar seus candidatos.
+
+A Operação Lava Jato teve um grande impacto no cenário político brasileiro, uma vez que é considerada a maior investigação sobre corrupção conduzida no Brasil e no mundo, além de apresenta grande repercussão midiática. Esta operação originou-se a partir da junção de outras ações de investigação, tendo início oficialmente em 2014 e segue em curso até hoje. A Lava-jato investiga uma grama de crimes de corrupção ativa e passiva, como: gestão fraudulenta, lavagem de dinheiro, organização criminosa, obstrução da justiça, operação fraudulenta de câmbio e recebimento de vantagem indevida. Ela foi responsável por identificar esquemas de corrupção na Petrobrás que envolviam não somente empresários e empreiteiras, como também o setor público e diversas figuras políticas. Até o momento já foram realizadas 775 buscas e apreensões, 95 prisões preventivas, 104 prisões temporárias, além de acordos de delação.
+
+Uma pesquisa de opinião conduzida pela IPSOS[^1]  em 2018 perguntou aos entrevistados se eles votariam em um candidato a deputado federal envolvido em denúncias da Lava Jato, 70% respondeu que não e 12% que não sabe, e se votariam em um deputado federal envolvido em denúncias de corrupção, tendo 65% dos entrevistados dito que não também e 13% que não sabe. Além disso, essa pesquisa constatou que 62% dos brasileiros acreditam que a operação Lava Jato irá trazer renovação política. Isso mostra que os eleitores brasileiros possuíam a intenção de votar retrospectivamente nas eleições de 2018 para deputados federais, além de ser consistente com os modelos de agência política (Fearon, 1999; Besley, 2006), nos quais um eleitor se preocupa com ofensas passadas de políticos, porque essas ações fornecem informações sobre quem eles são. Entretanto, essa punição dos candidatos envolvidos em corrupção de fato acontece na realidade?
+	
+Espera-se que o escândalo de corrupção no Brasil, assim como na Inglaterra em 2010, leve os eleitores a punirem os candidatos que pleiteiam a reeleição e foram implicados, ou seja, votar retrospectivamente, no entanto, espera-se que essa punição seja menor caso o candidato pertença a um partido com maior grau de partidarismo regional gerando então à hipótese interativa deste trabalho.
+H1: Um candidato implicado como corrupto pela operação Lava Jato pertencente a um partido com maior grau de identificação partidária na macrorregião de seu distrito eleitoral será menos punido do que os candidatos implicados de um partido menos partidário. 
+
+Por fim, a partir dos estudos de Eggers (2014), construí o modelo teórico deste estudo. Este modelo propõe que um eleitor possui duas configurações: um candidato de seu partido de preferência e implicação de corrupção. Sua decisão de reeleger ou não este candidato irá depender do seu grau de utilidade (Ui), dado por: Ui = C – Pi, onde C é o peso da corrupção e Pi o peso do partidarismo do indivíduo. Ou seja, se a utilidade for positiva, significa que as preferências partidárias de um indivíduo não são fortes o suficiente para se sobrepor ao peso da corrupção, então o indivíduo irá votar retrospectivamente não reelegendo o candidato implicado no escândalo de corrupção. Já se a Utilidade (Ui) for negativa, significa que as preferências partidárias do indivíduo possuem maior força do que as implicações de corrupção do candidato, portanto o indivíduo não irá votar retrospectivamente e dar seu voto ao candidato acusado. Dessa forma, apenas aqueles eleitores com certo grau de identificação partidária com o partido do candidato incumbente o irão o premiar com o voto para a reeleição.
+
+[^1]:https://www.ipsos.com/pt-br/lava-jato-e-opiniao-publica
+
+
+
+# DADOS E DESENHO DE PESQUISA 
+
+Um político incumbente estar implicado em um escândalo de corrupção e pertencer a um partido com grande partidarismo regional sofrerá menor prestação de contas eleitorais do que os implicados com menor partidarismo? Para responder esta pergunta analiso o caso das eleições no Brasil em 2018. Este caso foi escolhido uma vez que a operação Lava Jato é reconhecida como maior operação contra a corrupção da história mundial, fazendo-se importante estudar suas consequências eleitorais, além de que o Brasil é um país de sistema eleitoral proporcional, podendo trazer resultados diferentes dos estudos conduzidos no Reino Unido por Eggers (2014).  
+
+As principais característica deste desenho de pesquisa são: população composta por 373 deputados federais incumbentes que pleitearam a reeleição no ano de 2018 concorrendo ao cargo de deputado federal; estudo cross-sectional no período temporal de 2018; técnica de análise quantitativa a partir de estudos observacionais, apresentando estatística descritiva e regressão multivariada interativa. A tabela 1 a seguir apresenta o resumo das variáveis utilizadas nesta análise[^2]:
+
+
+\begin{center}
+Tabela 1 - Descrição das Variáveis
+\end{center}
+```{r fig 1, echo=FALSE, fig.align='center', out.height= "13cm", out.width="17cm"}
+knitr::include_graphics("img1.png")
+```
+*fonte: elaboração própria* 
+
+
+A seguir, podemos verificar a tabela 2 descritiva das variáveis numéricas no modelo:
+
+\begin{center}
+Tabela 2 - Resumo Descritivo das Variáveis
+\end{center}
+```{r fig 2, echo=FALSE, fig.align='center', out.height= "3cm", out.width="16cm"}
+knitr::include_graphics("img2.png")
+```
+*fonte: elaboração própria, de acordo com os resultados da análise descritiva no R*
+
+Como pode ser observado na tabela acima, houve uma queda geral na quantidade de votos de 2014 para 2018, uma vez que o crescimento médio de votos foi de -13.88%. A mediana mostra que metade dos casos obtiveram um decrescimento de votos de mais de 26.52%. Além disso, desvio padrão se mostra alto, com um valor de 122.08.  Também pode ser observado um caso extremo de aumento no percentual de voto, tendo um candidato crescido 2126.77% em relação a 2014, maior valor de crescimento registrado.  Implicado obteve uma média de 0.04 e uma mediana igual a 0, isso mostra que houveram poucos candidatos implicados na lava-jato. Quanto a variável de partidarismo regional, pode-se observar que a mediana igual a zero mostra que a maioria dos candidatos pertencem a partidos com 0% de identificação partidária, sendo a maior identificação partidária encontrada de 34% para um partido em uma macrorregião do Brasil. Os dados para total de recursos recebidos mostram que os candidatos incumbentes recebem em média de 1429914.40 reais para sua campanha eleitoral, e que metade dos candidatos da amostra recebem um valor abaixo de 1390743.35. O desvio padrão é de 553.471,32 e o maior valor recebido por um candidato foi de 2.510.392,99, um pouco menos que o dobro da média. O PIB per capita por estado possui uma média de 28140.39 e mediana de 25937.96, enquanto o desvio padrão é grande de 11891.54, mostrando desigualdade entre os estados. O maior PIB per capita é de 79099.77, sendo maior do que o dobro da média.
+
+
+Para melhor visualizar as variáveis aqui utilizadas, apresento hisogramas representando as distribuições das variáveis contínuas.
+
+
+
+```{r ggplot_variables1, echo = FALSE, message = FALSE, warning = FALSE}
+# Histograma de votegrowth
+ggplot(data = ncoelho[ncoelho$votegrowth < 150,], aes(votegrowth)) +
+  geom_histogram()+
+  labs(title = " Gráfico 1 - Histograma da % de crescimento dos votos de 2014 para 2018")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+O gráfico 1 acima apresenta a distribuição da nossa variável dependente votegrowth, ele mostra que a percentagem do crescimento dos votos de cada candidato em seus distrituos varia em torno de -100% a 100%[^3].  Existe uma maior área preenchida ao lado esquerdo do gráfico, no espectro negative, o que significa que houve maior decrescimento de votos recebidos pelos candidatos do que crescimento, ou seja, a maioria dos deputados recebeu menos votos em 2018 do que recebeu em 2014.
+
+
+
+```{r ggplot_variables2, echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(data = ncoelho, aes(partidarism)) +
+  geom_histogram()+
+  labs(title = "Gráfico 2 - Histograma de partidarismo")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+Como pode ser visto no gráfico 2 acima, o eleitorado no Brasil não apresenta grandes preferências partidárias, havendo uma moda para o valor de 0 em partidarismo, e havendo também uma mediana igual a 0, sendo a média da distribuição igual a 4.05 e o desvio padrão de 8.23. Além do mais, de acordo com os dados do o Datafolha em agosto de 2018, há uma grande discrepância entre as identificação entre os partidos, grande maioria apresenta 0% de identificação, enquanto que o MDB e PSDB apresentam uma pequena quantidade de identificados e o PT dispara nas preferências. O partidarismo do PT pode ser observado pelos casos no gráfico em torno de 20 e 30.
+
+
+
+```{r ggplot_variables3, echo = FALSE, message = FALSE, warning = FALSE}
+# Histograma de Total de Recurso Recebidos pelos candidatos
+ggplot(data = ncoelho, aes(log(trr))) +
+  geom_histogram()+
+  labs(title = "Gráfico 3 - Histograma do Total de Recursos Recebidos em log")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+Já o gráfico 3 acima, apresenta a distribuição da quantidade total de receita recebida pelos incumbentes em log, evidenciando que a maioria dos candidatos incumbentes recebem grande quantidade de recursos para a campanha eleitoral, metade dos casos, aproximadamente, se encontram acima de faixa do valor logarítimo de 14, correspondente a aproxiamadamente 1.4 milhões de reais. Poucos casos podem ser observados abaixo da faixa do valor logarítimo de 13, ou aproximadamente 500 mil reais.
+
+Além da análise descritiva das variáveis, examino a relação entre percentagem de votos recebida pelo candidato incumbente e sua implicação na Lava-Jato condicionada ao grau de partidarismo do seu partido. Para analisar esta relação estima uma regressão multivariada com termo interativo, tendo crescimento de votos em 2018 em relação a 2014 como variável dependente e como variáveis independentes temos implicado, partidarismo, PIB per capita dos estados, Total de Recursos Recebidos pelos candidatos para a campanha eleitoral e macrorregiões, sendo esta trêss últimas variáveis de controle. Estas variáveis foram escolhidas baseadas nas variáveis utilizadas por Eggers (2014) em seu estudo. O modelo apresentado pode ser visto abaixo::
+ 
+ 
+```{r fig 5, echo=FALSE, fig.align='center', out.height= "2cm", out.width="16cm"}
+knitr::include_graphics("img5.png")
+```
+
+[^2]: (https://pt.wikipedia.org/wiki/Lista_de_pessoas_envolvidas_na_Opera%C3%A7%C3%A3o_Lava_Jato) data de acesso: 20/08/2019.
+
+[^3]: Alguns casos foram excluídos do histograma por destoarem muito da média e para melhor visualização dos dados.
+
+# RESULTADOS
+
+Para responder a pergunta de pesquisa, é utilizada uma regressão multivariada interativa. No modelo temos a variável dependente votegrowth e as variáveis independentes implicated e partidarism, havendo uma interação entre as duas, as outras variáveis presentes, pibpercapita, trr e macror, são utilizadas para controle do modelo. As variáveis pibpercapita e trr passam por transformação logarítmica para corrigir as extremidades elevadas, garantindo melhor ajuste. O modelo 2 é uma versão do modelo 1 com os hat values extraídos[^4].
+
+
+```{r model_1, echo = FALSE, message = FALSE, warning = FALSE}
+# modelo de regressão linear
+reg <- lm (votegrowth ~ partidarism + factor(implicated)*partidarism + factor(implicated) + log(pibpercapita) + log(trr) + factor(macror), data = ncoelho)
+
+## Reestimando modelos sem outliers
+# Extraíndo hat values do modelo
+hv <- hatvalues(reg)
+
+# Modelo 2 - sem outliers
+reg2 <- lm (votegrowth ~ partidarism + factor(implicated)*partidarism + factor(implicated) + log(pibpercapita) + log(trr) + factor(macror), data = ncoelho[hv<4*mean(hv),])
+```
+
+\begin{center}
+Tabela 3 - Resumo da Regressão
+\end{center}
+```{r fig 3, echo=FALSE, fig.align='center', out.height= "9cm", out.width="10cm"}
+knitr::include_graphics("img3.png")
+```
+
+
+A partir dos resultados do modelo 1 podemos inferir que o aumento de uma unidade na variável partidarism causa um efeito de -0.34 em votegrowth, ou seja, a cada uma unidade a mais de partidarism, gera uma queda de 0.34% no crescimento votos de um candidato incumbente. Este valor de efeito é muito pequeno em termos das dimensões de crescimento de votos, além de que esta variável não é estatisticamente significante, podendo variar seu efeito no intervalo de confiança[^5] de -1.88% a 1.18%, ou também ser igual a zero.  Já os efeitos para a variável implicated mostram que quando esta variável é igual a 1, há uma queda de 9.86% no crescimento de votos, o que significa que estar envolvido no escândalo de corrupção na Lava Jato diminui as chances de reeleição de um candidato incumbente, como esperado. Entretanto, assim como partidarism, o intervalo de confiança dessa vaiável cruza o zero, como não há significância estatística o seu efeito pode variar de -76.47% a 56.73% em votegrowth. 
+
+No que diz respeito ao termo de interação entre implicated e partidarismo, podemos observar que um candidato ser implicado no escândalo de corrupção da Lava Jato e ser de um partido mais partidário não aumenta suas chances de reeleição, tendo um efeito negativo de 1.13, ou seja, os votos decrescem em 1.13%. Esse resultado, além de não ser estatisticamente significante, apresenta direção contrária ao esperado pela nossa hipótese de que um partido com maior grau de identificação partidária na macrorregião de seu distrito eleitoral, ao ser implicado como corrupto pela operação Lava Jato, será menos punido do os demais implicados. Dessa forma, ainda não podemos descartar a hipótese nula. Para além, a variável de controle log do PIB per capita por estado apresentou um beta de 48.09, o que significa que o aumento de 1% dessa variável gera um efeito de 48.09/100 no crescimento de votos, mas também sendo este achado estatisticamente insignificante. Um dado interessante e estatisticamente significante, no entanto, foi encontrado na variável de controle log de trr (total de recursos recebidos pelos candidatos para a campanha eleitoral), que apontou um beta negativo de -36.17, ou seja, o aumento de 1% em trr gera um efeito de -36.17/100 em votegrowth, diferentemente da direção esperada. É importante notar que o R2 foi igual a 0.033, o que significa que 3.3% da variável dependente votegrowth pode ser explicada pelo modelo, ou seja, é um baixo poder de explicação. 
+
+O modelo 2 não apresenta resultados muito destoantes do modelo 1. Para a variável partidarism há um efeito também negativo, e não estatisticamente significante, de -0.47% em votegrowth. Já em implicated é observado um efeito não significativo de -6,49% em votegrowth, efeito que segue a mesma direção do modelo 1. O termo interativo entre partidarism e implicated também apresenta valores parecidos, apresentando um beta de -21.06. assim como o log de PIB por estado que apresentou um beta de 50.77. O nível de significância para trr aumentou neste modelo, e o efeito do aumento de 1% desta variável causa a diminuição de 52.96/100 na variável votegrowth. O R2 do modelo 2 é um pouco maior do que o modelo 1, sendo ele de 0.048 (ou 4.8%), sendo então pouco mais explicativo. 
+
+A seguir segue a tabela dos efeitos marginais de partidarism quando implicated é igual a 0 e quando implicate é igual a 1:
+
+\begin{center}
+Tabela 4 - Efeito Marginal
+\end{center}
+```{r fig 4, echo=FALSE, fig.align='center', out.height= "3cm", out.width="13cm"}
+knitr::include_graphics("img4.png")
+```
+
+
+Os modelos são reconhecidamente fracos, entretanto, isso se deve ao fato da dificuldade de mensuração das variáveis independentes. Primeiramente, muitos políticos foram implicados na Lava Jato, mas grande parte deles não puderam ser abarcados por nossa análise, uma vez que não estavam concorrendo ao cargo de deputado federal nas eleições de 2018, restando poucos casos de implicados incluídos, dificultando respostas estatisticamente significantes. Além disso, o maior problema desta variável é que ela não mensura o conhecimento do público geral de que tal político está envolvido com corrupção, apenas o fato de que ele foi implicado. Quanto a variável de partidarismo, da além pouca preferência partidária brasileira, existe uma limitação na disponibilidades de dados que representem a preferência partidária para o nível estadual, sendo este o motivo deste artigo fazer uso apenas a nível das macrorregiões. No entanto, todas as variáveis previstas pela literatura foram incluídas aos modelos e alguns de seus achados abrem a agenda de pesquisa sobre as atípicas eleições de 2018.
+
+[^4]: Para checar os pressupostos dos modelos apresentados, consultar o apêndice.
+[^5]: Para visualizar todos intervalos de confiança dos betas do modelo 1, consultar o apêndice.
+
+
+# CONCLUSÕES
+
+O resultados deste trabalho, mesmo que, em grande parte, não estatisticamente significantes e com baixo teor explicativo, são importantes para mostrar a direção do efeito das variáveis estudadas. As descobertas aqui feitas mostram que os eleitores brasileiros aparentam votar retrospectivamente, uma vez que punem os candidatos envolvidos em corrupção de forma estatisticamente significante. Isso vai de acordo com as pesquisas de opinião, como a do IPSOS citada anteriormente, mostrando que a população possuía intenção de não votar em candidatos que foram envolvidos na Lava Jato. No entanto, os resultados nos fazem não descartar ainda a hipótese nula de que não existe relação estar implicado e ser de um partido mais forte regionalmente não possui influência sobre o crescimento de votos de um candidato a deputado federal incumbente, uma vez que o p-valor não é significante. Porém os resultados também mostram um resultado interessante e inesperado: o total de recursos recebidos por incumbentes para a campanha eleitoral de 2018 tem efeito negativo no crescimento de votos, contrário ao que vinha sendo mostrando pela literatura. Abre-se então, com este fato, uma boa agenda para a pesquisa na ciência política.
+
+Além do mais, as eleições brasileiras de 2018 podem ser consideradas atípicas, além do contexto de polarização, foi o ano em que houve o maior número de renovação política da história. Portanto, o decrescimento dos votos em 2018 com relação a 2014 dos candidatos incumbentes pode se dever ao fato de que o eleitorado brasileiro buscou renovação no geral, sendo este fenômeno não apenas explicado pela operação Lava Jato, PIB dos estados e a verba de campanhas, uma vez que o poder explicativo do nosso modelo é muito baixo. 
+
+A teoria aqui proposta foi provada como uma incógnita para o caso brasileiro, comparado aos estudos realizados no Reino Unidos, que mostram resultados mais consistentes. Talvez isso se dê pelo fato de o Reino Unido ser um país com características populacionais e econômicas muito diferentes do Brasil, podendo reproduzir interesses diferentes em relação à política. Assim como o sistema eleitoral majoritário britânico, de acordo com Nicolau (1999), permite maior accountability eleitoral do que sistemas proporcionais. Portanto, este artigo espera contribuir para a literatura de voto retrospectivo e mostrar que a Lava Jato não trouxe grandes consequências eleitorais aparentes para o voto retrospectivo, apesar de sua magnitude como operação. 
+
+
+
+# REFERÊNCIAS BIBLIOGRÁFICAS
+
+Achen, Christopher H., and Larry M. Bartels. 2004. “Musical Chairs: Pocketbook Voting and the Limits of Democratic Accountability.” Prepared for presentation at the Annual Meeting of the American Political Science Association, Chicago.
+
+———. 2016. Democracy For Realists: Why Elections Do Not Produce Responsive Government. Princeton: Princeton University Press.
+
+Bartels, Larry M. 1996. “Uninformed Votes: Information Effects in Presidential Elections.” American Journal of Political Science 40: 194– 230.
+
+———. 2002a. “Beyond the Running Tally: Partisan Bias in Political Perceptions.” Political Behavior 24: 117– 150.
+
+———. 2014. “Ideology and Retrospection in Electoral Responses to the Great Recession.” In Nancy Bermeo and Larry M. Bartels, eds., Mass Politics in Tough Times: Opinions, Votes, and Protest in the Great Recession, 185– 223. New York: Oxford University Press.
+
+Berelson, Bernard R., Paul F. Lazarsfeld, and William N. McPhee. 1954. Voting: A Study of Opinion Formation in a Presidential Campaign. Chicago: University of Chicago Press.
+
+Campbell, Angus, Philip E. Converse, Warren E. Miller, and Donald E. Stokes. 1960. The American Voter. New York: John Wiley.
+
+Conover, Pamela Johnston, Stanley Feldman, and Kathleen Knight. 1987. “The Personal and Political Underpinnings of Economic Forecasts.” American Journal of Political Science 31: 559– 583. 
+
+Converse, Philip E. 1964. “The Nature of Belief Systems in Mass Publics.” In David E. Apter, ed., Ideology and Discontent, 206– 261. Glencoe, IL: Free Press.
+
+Downs, Anthony. 1957. An Economic Theory of Democracy. New York: Harper & Row.
+
+Eggers, Andrew C. .2014. Partisanship and Electoral Accountability: Evidence from the UK Expenses Scandal. Quarterly Journal of Political Science: 9(4): 441–472. doi: http://dx.doi.org/10.1561/100.00013140
+
+Erikson, Robert S. 2004. Macrovs. MicroLevel Perspectives on Economic Voting: Is the MicroLevel Evidence Endogenously Induced?. Prepared for presentation at the Annual Summer Meeting of the Society for Political Methodology, Stanford, CA. 
+
+Fiorina, Morris P. 1981. Retrospective Voting in American National Elections. New Haven, CT: Yale University Press.
+
+Kramer, Gerald H. 1983. “The Ecological Fallacy Revisited: Aggregate- versus Individual-Level Findings on Economic and Elections, and Sociotropic Voting.” American Political Science Review 77(1): 92–111.
+
+Lenz, Gabriel S. 2012. Follow the Leader? How Voters Respond to Politicians’ Policies and Performance. Chicago: University of Chicago Press.
+
+Nicolau, Jairo. 1999. Sistemas Eleitorias. Rio de Janeiro: Editora FGV.
+
+Pavão, Nara. 2018. Corruption As An Only Option: The Limits to Electoral Accountability. The Journal of Politics, 80(3).
+
+Wolfers, Justin. 2002. Are Voters Rational? Evidence from Gubernatorial Elections. Research Paper No. 1730, Graduate School of Business, Stanford University.
+
+
+
+# APÊNDICE
+
+O gráfico 4 abaixo mostra o histograma da variável de controle PIB Per Capita estadual em log, é possível observar que existe grande desigualdade nos níveis de PIB per capita entre os estados brasileiros, havendo um caso extremo com o PIB bem mais alto, o qual corresponde a 79099.77 reais. 
+
+```{r graph4, echo = FALSE, message = FALSE, warning = FALSE}
+
+# Histograma de PIB per capita
+ggplot(data = ncoelho, aes(log(pibpercapita))) +
+  geom_histogram()+
+  labs(title = "Gráfico 4 - Histograma do PIB Per Capita")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+  
+
+O gráfico 5 abaixo mostra a relação entre a variável de crescimento de votos com partidarismo, como pode ser observado, não podemos fazer inferências através dessa gráfico, as variáveis não apresentam relação, o que fica evidente pela horizontalidade da linha vermelha no gráfico. No entanto, isso não significa que partidarismo não possa ter efeito em votegrowth dentro do modelo de regressão.
+
+```{r graph5, echo = FALSE, message = FALSE, warning = FALSE}
+# Visualizando relação entre as variáveis
+plot(ncoelho$votegrowth ~ ncoelho$partidarism,
+     main = 'Gráfico 5 - Relação entre votegrowth e partidarismo',
+     ylab = 'votegrowth',
+     xlab = "partidarismo")
+abline(lm(ncoelho$votegrowth ~ ncoelho$partidarism),
+       col = 'red')
+```
+
+O gráfico 6 abaixo mostra a relação entre a variável de crescimento de votos com PIB	 per capita estadual (em log), como pode ser observado, não podemos fazer inferências através dessa gráfico, as variáveis não apresentam relação, o que fica evidente pela horizontalidade da linha vermelha no gráfico. No entanto, isso não significa que o PIB não possa ter efeito em votegrowth dentro do modelo de regressão.
+
+```{r graph6, echo = FALSE, message = FALSE, warning = FALSE}
+# votegrowth e PIB per Capita
+# transformando o PIB em log no df
+ncoelho$logpibpercapita <- log(ncoelho$pibpercapita)
+#gráfico
+plot(ncoelho$votegrowth ~ ncoelho$logpibpercapita,
+     main = 'Gráfico 6 - Relação entre votegrowth e log de PIB per capita',
+     ylab = 'votegrowth',
+     xlab = "PIB Per Capita (log)")
+abline(lm(ncoelho$votegrowth ~ ncoelho$logpibpercapita),
+       col = 'red')
+```
+
+O gráfico 7 abaixo mostra a relação entre a variável de crescimento de votos com total de recursos recebidos pelos incumbentes para a campanha eleitoral (em log), como pode ser observado pelo comportamento dos pontos e pela declinação da linha vermelha, existe uma certa relação negativa entre as variáveis, a medida que votegrowth dimiui, cresce o trr(log).
+
+```{r graph7, echo = FALSE, message = FALSE, warning = FALSE}
+# votegrowth e Total de Recursos Recebidos
+# transformando o trr em log no df
+ncoelho$logtrr <- log(ncoelho$trr)
+#gráfico
+plot(ncoelho$votegrowth ~ ncoelho$logtrr,
+     main = 'Gráfico 7 - Relação entre votegrowth e log de trr',
+     ylab = 'votegrowth',
+     xlab = "TRR(log)")
+abline(lm(ncoelho$votegrowth ~ ncoelho$logtrr),
+       col = 'red')
+```
+
+O gráfico 8 mostra a relação da variável dependente votegrowth e a variábel independete implicated, como pode ser visto pela linho no boxplot, as medianas dos votos para os candidatos implicados (1) e para os não implicados(0) estão muito próximas, o que pode significar que estas variáveis não possuem relação.
+
+```{r graph8, echo = FALSE, message = FALSE, warning = FALSE}
+# Boxplote de votegrowth por implicated
+ggplot(data = ncoelho, aes(x= factor(implicated), y= votegrowth)) +
+  geom_boxplot()+
+  labs(title = "Gráfico 8 - Boxplot de votegrowth por implicated")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+O gráfico 9 abaixo mostra a frequência dos partidos dos candidatos incumbentes concorrentes à deputado federal nas eleições de 2018. Como pode ser observado, o partido mais frequente é o PT, seguido do MDB, PSDB e PP.
+
+```{r graph9, echo = FALSE, message = FALSE, warning = FALSE}
+# Histograma de frequência dos partidos
+t_part <- table(ncoelho$party)
+t_part <- data.frame(t_part)
+ggplot(data = t_part, aes(y= Freq, x= Var1)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Gráfico 9 - Frequência de Partidos")
+```
+
+Anteriormente, no escolpo do artigo, é mencionado o intervalo de confiança dos betas do Modelo 1, seus valores podem ser plenamente visualizados a seguir:
+
+```{r, confint}
+# Intervalo de confiança dos betas
+confint(reg)
+```
+
+Esta seção também é dedica às checagens dos pressupostos do modelo de regressão.
+
+A primeira checagem a ser feita é se há multicolinearidade no modelo 1, essa informação é dada pelo teste a seguir:
+
+```{r vif models, echo = FALSE, message = FALSE, warning = FALSE} 
+# Multicolinearidade
+vif(reg)
+
+```
+
+Como pode ser visto, todas as pontuações são menores do que 6, o que significa que nosso modelo não possui problema de multicolinearidade.
+
+```{r ggplot_resmodel_1, echo = FALSE, message = FALSE, warning = FALSE}
+hist(residuals(reg),
+     main = " Gráfico 10 de Histograma dos Residuos do Modelo")
+```
+
+No que diz respeito às normalidades dos resíduos, o gráfico 10 acima apresenta o comportamento da distribuição dos resíduos do modelo 1. Como pode ser observado, os resíduos não apresentam comportamento de normalidade, sendo isto um indício de heterocedasticidade.
+
+```{r htcd1123, echo = FALSE, message = FALSE, warning = FALSE}
+ggplot(data = ncoelho, aes(x = fitted(reg), y=residuals(reg))) +
+  geom_point() + 
+  labs(title="Gráfico 11 - Heteroscedasticidade do Modelo 1", x ="fitted (reg)", y = "residuals(reg)") +
+  geom_hline (yintercept = 0, linetype = "dashed", color = "blue") +
+  theme_minimal()
+```
+
+Quanto ao teste de heterocedasticidade, presentes no gráfico 11 acima, pode-se observar um comportamento não aleatório nos pontos do gráfico, isto significa que o modelo 1 não passa no teste e possui indícios de heterocedasticidade, sendo esta uma grande limitação deste trabalho.
+
+Uma vez que o modelo 1 é heterocedástico, foi realizada uma versão deste modelo com os estimadores de White-huber para corrigir este problema, como pode ser observado a seguir, os resultados dos betas permaneceram os mesmos após a correção:
+
+```{r reg}
+# modelo de regressão linear
+reg <- lm (votegrowth ~ partidarism + factor(implicated)*partidarism + factor(implicated) + pibpercapita + factor(macror), data = ncoelho)
+
+# Utilizando estimador de erros-padrão de White-Huber para corrigir heterocedasticidade
+coeftest(reg, vcov = vcovHC(reg, type="HC1"))
+
+```
+
+Em relação ao modelos 2, o teste multicolinearidade também deu negativo, como pode ser visto a seguir, não houveram valores maiores do que 6:
+
+```{r vif2 model2, echo = FALSE, message = FALSE, warning = FALSE} 
+# Multicolinearidade
+vif(reg2)
+
+```
+
+O gráfico 11 abaixo também mostra que não há distribuição normal entre os resíduos do modelo 2.
+
+```{r ggplot_resmodel_2, echo = FALSE, message = FALSE, warning = FALSE}
+hist(residuals(reg2),
+     main = " Gráfico 12 de Histograma dos Residuos do Modelo 2")
+```
+
+E por fim, os gráficos a seguir mostram que o modelo 2 também não apresenta homocedasticidade, uma vez que os pontos seguem um comportamento não aleatório.
+
+```{r htcd1, echo = FALSE, message = FALSE, warning = FALSE}
+plot(reg2, Which = 1)
+```
+
